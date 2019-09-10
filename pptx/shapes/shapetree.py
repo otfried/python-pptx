@@ -296,6 +296,27 @@ class _BaseGroupShapes(_BaseShapes):
         self._recalculate_extents()
         return self._shape_factory(pic)
 
+    def add_svg_picture(self, svg_file, fallback_file, left, top, width=None, height=None):
+        """Add picture shape displaying SVG image in *svg_file*.
+
+        *svg_file* can be either a path to a file (a string) or a file-like
+        object. The picture is positioned with its top-left corner at (*top*,
+        *left*). If *width* and *height* are both |None|, the native size of
+        the image is used. If only one of *width* or *height* is used, the
+        unspecified dimension is calculated to preserve the aspect ratio of
+        the image. If both are specified, the picture is stretched to fit,
+        without regard to its native aspect ratio.
+
+        SVG images require a fallback image in bitmap format. It is
+        provided as *fallback_file*, and can be either a path to a
+        file or a file-like object.
+        """
+        fallback_part, rIdF = self.part.get_or_add_image_part(fallback_file)
+        image_part, rId = self.part.get_or_add_image_part(svg_file)
+        pic = self._add_svg_pic_from_image_part(image_part, rId, rIdF, left, top, width, height)
+        self._recalculate_extents()
+        return self._shape_factory(pic)
+
     def add_shape(self, autoshape_type_id, left, top, width, height):
         """Return new |Shape| object appended to this shape tree.
 
@@ -397,6 +418,23 @@ class _BaseGroupShapes(_BaseShapes):
         name = "Picture %d" % (id_ - 1)
         desc = image_part.desc
         pic = self._grpSp.add_pic(id_, name, desc, rId, x, y, scaled_cx, scaled_cy)
+        return pic
+
+    def _add_svg_pic_from_image_part(self, image_part, rId, rIdF, x, y, cx, cy):
+        """Return a newly appended `p:pic` element as specified.
+
+        The `p:pic` element displays the SVG image in *image_part*
+        with size and position specified by *x*, *y*, *cx*, and
+        *cy*. The element is appended to the shape tree, causing it to
+        be displayed first in z-order on the slide.
+
+        *rIdF* specifies the fallback bitmap.
+        """
+        id_ = self._next_shape_id
+        scaled_cx, scaled_cy = image_part.scale(cx, cy)
+        name = "Picture %d" % (id_ - 1)
+        desc = image_part.desc
+        pic = self._grpSp.add_svg_pic(id_, name, desc, rId, rIdF, x, y, scaled_cx, scaled_cy)
         return pic
 
     def _add_sp(self, autoshape_type, x, y, cx, cy):

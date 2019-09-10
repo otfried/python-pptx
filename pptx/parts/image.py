@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import hashlib
 import os
+from lxml import etree
 
 try:
     from PIL import Image as PIL_Image
@@ -236,6 +237,7 @@ class Image(object):
             "GIF": "gif",
             "JPEG": "jpg",
             "PNG": "png",
+            "SVG": "svg",
             "TIFF": "tiff",
             "WMF": "wmf",
         }
@@ -282,6 +284,12 @@ class Image(object):
         A tuple containing useful image properties extracted from this image
         using Pillow (Python Imaging Library, or 'PIL').
         """
+        # detect if image is an SVG file
+        if self._filename is not None:
+            if self._filename.lower().endswith(".svg"):
+                return self._svg_props()
+        elif b"<svg" in self._blob[:60]:
+            return self._svg_props()
         stream = BytesIO(self._blob)
         pil_image = PIL_Image.open(stream)
         format = pil_image.format
@@ -289,3 +297,29 @@ class Image(object):
         dpi = pil_image.info.get("dpi")
         stream.close()
         return (format, (width_px, height_px), dpi)
+
+    def _svg_props(self):
+        # some default values if svg (incorrectly) contains no width/height
+        w = "100px"
+        h = "100px"
+        stream = BytesIO(self._blob)
+        # read first (svg) tag
+        _, element = next(etree.iterparse(stream, events=("start",)))
+        w = element.get("width")
+        h = element.get("height")
+        stream.close()
+
+        # function to convert svg units to svg pixels (1/96 inch)
+        factor = { "mm" : 96.0 / 25.4,
+                   "cm" : 96.0 / 2.54,
+                   "in" : 96.0,
+                   "pc" : 96.0 / 6.0,
+                   "pt" : 96.0 / 72.0,
+                   "px" : 1.0 }
+        def svgUnit(s):
+            if s[-2:] in ("mm", "cm", "in", "pc", "pt", "px"):
+                v = float(s[:-2])
+                return v * factor[s[-2:]]
+            return float(s)
+
+        return ("SVG", (svgUnit(w), svgUnit(h)), 96)

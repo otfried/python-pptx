@@ -71,6 +71,16 @@ class CT_Picture(BaseShapeElement):
         return pic
 
     @classmethod
+    def new_svg_pic(cls, id_, name, desc, rId, rIdF, left, top, width, height):
+        """
+        Return a new ``<p:pic>`` element tree configured with the supplied
+        parameters.
+        """
+        xml = cls._pic_svg_tmpl() % (id_, name, desc, rIdF, rId, left, top, width, height)
+        pic = parse_xml(xml)
+        return pic
+
+    @classmethod
     def new_video_pic(
         cls, shape_id, shape_name, video_rId, media_rId, poster_frame_rId, x, y, cx, cy
     ):
@@ -186,6 +196,40 @@ class CT_Picture(BaseShapeElement):
             "    <a:stretch>\n"
             "      <a:fillRect/>\n"
             "    </a:stretch>\n"
+            "  </p:blipFill>\n"
+            "  <p:spPr>\n"
+            "    <a:xfrm>\n"
+            '      <a:off x="%%d" y="%%d"/>\n'
+            '      <a:ext cx="%%d" cy="%%d"/>\n'
+            "    </a:xfrm>\n"
+            '    <a:prstGeom prst="rect">\n'
+            "      <a:avLst/>\n"
+            "    </a:prstGeom>\n"
+            "  </p:spPr>\n"
+            "</p:pic>" % nsdecls("a", "p", "r")
+        )
+
+    @classmethod
+    def _pic_svg_tmpl(cls):
+        return (
+            "<p:pic %s>\n"
+            "  <p:nvPicPr>\n"
+            '    <p:cNvPr id="%%d" name="%%s" descr="%%s"/>\n'
+            "    <p:cNvPicPr>\n"
+            '      <a:picLocks noChangeAspect="1"/>\n'
+            "    </p:cNvPicPr>\n"
+            "    <p:nvPr/>\n"
+            "  </p:nvPicPr>\n"
+            "  <p:blipFill>\n"
+            '    <a:blip r:embed="%%s">\n'
+            "      <a:extLst>\n"
+            '        <a:ext uri="{96DAC541-7B7A-43D3-8B79-37D633B846F1}">\n'
+            '          <asvg:svgBlip xmlns:asvg="http://schemas.microsoft.com/office/drawing/2016/SVG/main" r:embed="%%s"/>\n'
+            "        </a:ext>\n"
+            "      </a:extLst>\n"
+            "    </a:blip>\n"
+            "    <a:srcRect/>\n"
+            "    <a:stretch/>\n"
             "  </p:blipFill>\n"
             "  <p:spPr>\n"
             "    <a:xfrm>\n"

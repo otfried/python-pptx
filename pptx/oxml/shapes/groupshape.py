@@ -82,6 +82,15 @@ class CT_GroupShape(BaseShapeElement):
         self.insert_element_before(pic, "p:extLst")
         return pic
 
+    def add_svg_pic(self, id_, name, desc, rId, rIdF, x, y, cx, cy):
+        """
+        Append a ``<p:pic>`` shape to the group/shapetree having properties
+        as specified in call.
+        """
+        pic = CT_Picture.new_svg_pic(id_, name, desc, rId, rIdF, x, y, cx, cy)
+        self.insert_element_before(pic, "p:extLst")
+        return pic
+
     def add_placeholder(self, id_, name, ph_type, orient, sz, idx):
         """
         Append a newly-created placeholder ``<p:sp>`` shape having the

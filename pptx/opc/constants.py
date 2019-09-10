@@ -218,6 +218,7 @@ class CONTENT_TYPE(object):
     SML_WORKSHEET = (
         "application/vnd.openxmlformats-officedocument.spreadsheetml.workshe" "et+xml"
     )
+    SVG = "image/svg+xml"
     SWF = "application/x-shockwave-flash"
     TIFF = "image/tiff"
     VIDEO = "video/unknown"
