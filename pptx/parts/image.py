@@ -309,17 +309,17 @@ class Image(object):
         h = element.get("height")
         stream.close()
 
-        # function to convert svg units to svg pixels (1/96 inch)
-        factor = { "mm" : 96.0 / 25.4,
-                   "cm" : 96.0 / 2.54,
-                   "in" : 96.0,
-                   "pc" : 96.0 / 6.0,
-                   "pt" : 96.0 / 72.0,
-                   "px" : 1.0 }
+        # function to convert svg units to points (1/72 in)
+        factor = { "mm" : 72.0 / 25.4,
+                   "cm" : 72.0 / 2.54,
+                   "in" : 72.0,
+                   "pc" : 72.0 / 6.0,
+                   "pt" : 1.0,
+                   "px" : 72.0 / 96.0 }
         def svgUnit(s):
             if s[-2:] in ("mm", "cm", "in", "pc", "pt", "px"):
                 v = float(s[:-2])
                 return v * factor[s[-2:]]
             return float(s)
 
-        return ("SVG", (svgUnit(w), svgUnit(h)), 96)
+        return ("SVG", (svgUnit(w), svgUnit(h)), 72)
